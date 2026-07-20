@@ -1,0 +1,75 @@
+name: Build Ambient Composer AI
+
+# Cloud-builds the Windows plugin on every push and publishes it as a rolling
+# "windows-latest" release. Your friend's laptop auto-downloads that release —
+# he never needs a compiler. The engine test suite is a HARD GATE: if it fails,
+# no release is published, so his auto-updater can only ever pull a build that
+# actually compiled and passed its tests.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write        # needed to publish/refresh the release
+
+jobs:
+  windows:
+    name: Windows build + tests + publish
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (CMake + fetch JUCE)
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build (Release, 64-bit)
+        run: cmake --build build --config Release --parallel
+
+      - name: Run engine test suite (HARD GATE)
+        run: .\build\AmbientComposerTests_artefacts\Release\AmbientComposerTests.exe
+
+      - name: Package plugin + write version marker
+        shell: pwsh
+        run: |
+          $rel = "build/AmbientComposerAI_artefacts/Release"
+          New-Item -ItemType Directory -Force -Path stage | Out-Null
+          Copy-Item -Recurse -Force "$rel/VST3/Ambient Composer AI.vst3" stage/
+          if (Test-Path "$rel/Standalone/Ambient Composer AI.exe") {
+            Copy-Item -Force "$rel/Standalone/Ambient Composer AI.exe" stage/
+          }
+          # version marker = commit SHA (the updater compares this)
+          "${{ github.sha }}" | Out-File -FilePath version.txt -Encoding ascii -NoNewline
+          Compress-Archive -Path stage/* -DestinationPath AmbientComposerAI-VST3.zip -Force
+          Get-ChildItem AmbientComposerAI-VST3.zip, version.txt | Format-Table Name,Length
+
+      - name: Publish rolling "windows-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-latest
+          name: Windows build (auto-update)
+          prerelease: true
+          body: |
+            Latest Windows build of Ambient Composer AI, produced automatically
+            from the newest code (commit ${{ github.sha }}).
+
+            Your friend's laptop downloads this automatically — nothing to do here.
+            To set up a NEW machine, download and run **Setup-AmbientComposerAI.bat**
+            from the `windows-autoupdate` folder of the repo (see INSTALL-WINDOWS.txt).
+          files: |
+            AmbientComposerAI-VST3.zip
+            version.txt
+
+  macos:
+    name: macOS regression build + tests
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Run engine test suite
+        run: ./build/AmbientComposerTests_artefacts/Release/AmbientComposerTests
