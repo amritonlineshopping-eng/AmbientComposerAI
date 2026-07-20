@@ -2,7 +2,7 @@
 
 A dedicated **ambient / cinematic MIDI-generator plugin** (VST3 · AU · Standalone) built with JUCE 8 and C++20, for **Windows and macOS**. It composes original, royalty-free, emotionally-evocative **chord progressions + melodies** in the style of *Oneheart, Antent, .diedlonely* and similar atmospheric producers — then you **drag the MIDI straight into FL Studio** (or any DAW) and play it with your own sounds.
 
-> **On Windows?** Jump to [🪟 Windows: build a shareable installer](#-windows-build-a-shareable-installer-for-your-friend) — your friend just downloads one `.exe` and runs it.
+> **Installing on Windows?** Jump to [🪟 Windows: install it locally](#-windows-install-it-locally-for-fl-studio) — your friend runs one script on his own laptop; no GitHub, no account.
 
 The plugin outputs **MIDI only**. It ships a tiny built-in preview synth used *solely* for auditioning inside the plugin window — it never renders your final sound.
 
@@ -25,53 +25,33 @@ The plugin outputs **MIDI only**. It ships a tiny built-in preview synth used *s
 
 ---
 
-## 🪟 Windows: build a shareable installer for your friend
+## 🪟 Windows: install it locally (for FL Studio)
 
-Your friend just needs **one file**: `AmbientComposerAI-Setup.exe`. He downloads it, double-clicks, clicks through the wizard, and it installs the VST3 (for FL Studio) and the standalone app — no Visual C++ redistributable, no other dependencies (the Windows runtime is linked statically).
+Your friend installs the plugin **on his own Windows laptop, entirely offline-of-the-cloud** — no GitHub, no account, no external installer to trust. He builds it once with a **one-click script** that then drops the VST3 into FL Studio's plugin folder.
 
-You don't need a Windows machine to produce it. This repo ships a **GitHub Actions** pipeline that builds and tests the plugin on a real Windows machine and packages the installer for you:
+**Give your friend the whole `AmbientComposerAI` folder** (as a zip) plus these two files that are already inside it:
 
-1. Put this project on GitHub (one-time):
-   ```bash
-   # from the project folder (a git repo is already initialised for you)
-   gh repo create ambient-composer-ai --private --source=. --push
-   # …or create an empty repo on github.com and:
-   #   git remote add origin https://github.com/<you>/ambient-composer-ai.git
-   #   git push -u origin main
-   ```
-2. GitHub automatically runs the **Build** workflow (watch it under the repo's **Actions** tab). It compiles with MSVC, runs the full test suite + pluginval, and builds the installer.
-3. When it finishes (green check), open that workflow run → **Artifacts** → download **`AmbientComposerAI-Windows-Installer`**. Inside is `AmbientComposerAI-Setup.exe`.
-4. Send that `.exe` to your friend.
+- **`INSTALL-WINDOWS.txt`** — the plain-language, step-by-step guide he follows.
+- **`Install-Windows.bat`** — the one-click build-and-install script.
 
-**Want a shareable download link instead of an artifact?** Push a version tag and GitHub publishes a **Release** with the installer attached at a public URL:
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-The installer then appears at `https://github.com/<you>/ambient-composer-ai/releases` — send your friend that link.
+The short version of what he does:
 
-> There's also a **portable** artifact (`AmbientComposerAI-Windows-Portable`) — a plain zip of the VST3 + standalone with no installer, if you'd rather copy files by hand.
+1. **Install the free build tools once:** [Visual Studio 2022 Community](https://visualstudio.microsoft.com/downloads/) → tick **“Desktop development with C++”** in the installer. (This includes CMake, which the plugin needs.)
+2. **Unzip** the `AmbientComposerAI` folder somewhere simple (e.g. the Desktop).
+3. **Double-click `Install-Windows.bat`** and click **Yes** at the permission prompt. It configures, builds (first run downloads JUCE — needs internet), and installs automatically. When it says **DONE!**, close the window.
+4. In **FL Studio**: **Options ▸ Manage plugins ▸ Find installed plugins**, then add **Ambient Composer AI** to a channel.
 
-### What your friend does (Windows)
+The script installs the VST3 to `C:\Program Files\Common Files\VST3\Ambient Composer AI.vst3` (FL scans this automatically) and a standalone app + desktop shortcut. The build links the Windows runtime statically, so there's **no Visual C++ redistributable** to install.
 
-1. Download `AmbientComposerAI-Setup.exe` and run it (Windows may show a SmartScreen prompt for an unsigned app → **More info ▸ Run anyway**).
-2. Click through the installer (it needs admin to write to the plugin folder).
-3. In **FL Studio**: **Options ▸ Manage plugins ▸ Find installed plugins**, then add **Ambient Composer AI** to a channel. Or launch the **standalone** app from the Start Menu to try it with no DAW.
+> Full instructions, including troubleshooting and uninstall, are in **`INSTALL-WINDOWS.txt`**.
 
-The installer places the VST3 in `C:\Program Files\Common Files\VST3` (FL scans this automatically) and the standalone app in `C:\Program Files\Ambient Composer AI` with Start-Menu/desktop shortcuts.
+### Optional: make a redistributable installer `.exe`
 
-### Building on Windows directly (optional)
-
-If you *do* have a Windows machine with **Visual Studio 2022** (Desktop C++) and **CMake**:
-```bat
-cmake -S . -B build
-cmake --build build --config Release
-```
-Then build the installer with [Inno Setup 6](https://jrsoftware.org/isdl.php):
+If your friend (or anyone on a Windows machine) wants a single `Setup.exe` to pass to *other* people, install [Inno Setup 6](https://jrsoftware.org/isdl.php) and, after building, run:
 ```bat
 "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\AmbientComposerAI.iss
 ```
-The setup `.exe` lands in `installer\Output\`.
+The setup `.exe` lands in `installer\Output\`. (Not needed for a normal install — the `.bat` already installs everything.)
 
 ---
 

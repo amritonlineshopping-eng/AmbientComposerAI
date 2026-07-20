@@ -1,0 +1,79 @@
+========================================================================
+  AMBIENT COMPOSER AI  —  How to install on Windows (for FL Studio)
+========================================================================
+
+You do this ONCE. Total time ~20-30 minutes, mostly waiting for downloads.
+You need a working internet connection.
+
+
+------------------------------------------------------------------------
+STEP 1 — Install the free build tools (one-time)
+------------------------------------------------------------------------
+1. Go to:   https://visualstudio.microsoft.com/downloads/
+2. Under "Visual Studio 2022", download "Community" (it's free) and run it.
+3. The installer shows a "Workloads" screen. TICK the box:
+
+        [x]  Desktop development with C++
+
+4. Click "Install" (bottom-right) and wait for it to finish.
+   (This also installs CMake, which the plugin needs. You do NOT need to
+    open Visual Studio afterwards — just installing it is enough.)
+
+
+------------------------------------------------------------------------
+STEP 2 — Unzip the plugin
+------------------------------------------------------------------------
+1. Unzip "AmbientComposerAI-Windows.zip" somewhere simple, like your Desktop.
+2. You now have a folder called "AmbientComposerAI".
+
+
+------------------------------------------------------------------------
+STEP 3 — Build & install it (one click)
+------------------------------------------------------------------------
+1. Open the "AmbientComposerAI" folder.
+2. Double-click:   Install-Windows.bat
+3. Windows asks for permission ("Do you want to allow...?") — click YES.
+   (It needs this to place the plugin in the shared plugin folder.)
+4. A black window opens and does everything by itself:
+   configuring, downloading one component, building, and installing.
+   Leave it running. The FIRST time takes a few minutes.
+5. When it prints "DONE!", press any key to close the window.
+
+
+------------------------------------------------------------------------
+STEP 4 — Use it in FL Studio
+------------------------------------------------------------------------
+1. Open FL Studio.
+2. Options  ->  Manage plugins  ->  click "Find installed plugins"
+   (let it finish scanning).
+3. In the plugin list, search for "Ambient Composer AI" and add it
+   to a channel.
+4. Pick a MOOD, press "Generate Both", then press Play to hear it.
+5. Drag the "Chords", "Melody", or "Combined" tile from the bottom of the
+   plugin onto the FL playlist or piano roll. Assign your own instrument
+   to the imported notes and play.
+
+There is also a desktop shortcut, "Ambient Composer AI", if you want to
+try the plugin on its own without FL Studio.
+
+
+------------------------------------------------------------------------
+IF SOMETHING GOES WRONG
+------------------------------------------------------------------------
+* "Could not find CMake / the Visual Studio C++ tools"
+      -> Step 1 wasn't completed. Re-run the Visual Studio installer and make
+         sure "Desktop development with C++" is ticked.
+
+* The build window closes instantly / shows an error
+      -> Right-click "Install-Windows.bat" -> "Run as administrator", and make
+         sure you have internet (the first build downloads a component).
+
+* FL Studio doesn't show the plugin
+      -> Run "Find installed plugins" again, and make sure VST3 scanning is on.
+         The plugin is installed here:
+         C:\Program Files\Common Files\VST3\Ambient Composer AI.vst3
+
+* To UNINSTALL later: delete that VST3 folder above, delete the folder
+      C:\Users\<you>\AppData\Local\Programs\Ambient Composer AI, and the
+      desktop shortcut.
+========================================================================
