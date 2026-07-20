@@ -78,6 +78,7 @@ jobs:
           files: |
             AmbientComposerAI-VST3.zip
             version.txt
+            windows-autoupdate/Setup-AmbientComposerAI.bat
 
   macos:
     name: macOS regression build + tests
