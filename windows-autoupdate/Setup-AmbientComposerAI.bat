@@ -5,18 +5,15 @@ title Ambient Composer AI - Setup
 REM ===========================================================================
 REM  Ambient Composer AI - one-time Windows setup (auto-updating).
 REM
-REM  Your friend runs THIS ONE FILE once. It:
-REM    1. downloads the tiny updater scripts from the public GitHub repo
-REM    2. installs the current plugin build
-REM    3. schedules silent automatic updates (at logon + hourly)
-REM
-REM  After this, every fix pushed to the repo installs itself in the
-REM  background - no compiler, no reinstalling, nothing else to run.
+REM  Your friend runs THIS ONE FILE once. It downloads a single self-contained
+REM  updater script, installs the current plugin build, and switches on silent
+REM  automatic updates. After this, fixes install themselves in the background.
 REM ===========================================================================
 
 set "REPO=amritonlineshopping-eng/AmbientComposerAI"
-set "RAWBASE=https://raw.githubusercontent.com/%REPO%/main/windows-autoupdate"
+set "RELBASE=https://github.com/%REPO%/releases/download/windows-latest"
 set "STATE=%ProgramData%\AmbientComposerAI"
+set "SCRIPT=%STATE%\AmbientComposerAI-AutoUpdate.ps1"
 
 REM --- Re-launch elevated (needed to install into the shared plugin folder) ---
 net session >nul 2>&1
@@ -36,32 +33,54 @@ echo.
 
 if not exist "%STATE%" mkdir "%STATE%"
 
-echo [1/3] Downloading the updater...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; try { Invoke-WebRequest -UseBasicParsing '%RAWBASE%/Update-AmbientComposerAI.ps1' -OutFile '%STATE%\Update-AmbientComposerAI.ps1'; Invoke-WebRequest -UseBasicParsing '%RAWBASE%/Register-AutoUpdate.ps1' -OutFile '%STATE%\Register-AutoUpdate.ps1' } catch { exit 1 }"
-if not exist "%STATE%\Update-AmbientComposerAI.ps1" (
+echo [1/2] Downloading the installer/updater...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $u='%RELBASE%/AmbientComposerAI-AutoUpdate.ps1'; $o='%SCRIPT%'; for($i=1;$i -le 6;$i++){ try{ Invoke-WebRequest -UseBasicParsing $u -OutFile $o; if((Test-Path $o) -and (Get-Item $o).Length -gt 0){ exit 0 } }catch{ Start-Sleep -Seconds 3 } }; exit 1"
+
+if not exist "%SCRIPT%" (
     echo.
-    echo ERROR: could not download the updater. Check your internet connection,
-    echo make sure the GitHub repository is public, then run this again.
+    echo ERROR: could not download the installer.
+    echo Please check your internet connection and run this file again.
     echo.
     pause & exit /b 1
 )
 
-echo [2/3] Installing the plugin now...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%STATE%\Update-AmbientComposerAI.ps1"
-
-echo [3/3] Turning on automatic updates...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%STATE%\Register-AutoUpdate.ps1"
+echo [2/2] Installing the plugin and turning on automatic updates...
+echo       (this can take a minute the first time)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%" -Setup
+set "SETUPRC=%errorlevel%"
 
 echo.
+REM --- verify the result honestly ---
+set "TASKOK=0"
+schtasks /Query /TN "AmbientComposerAI-AutoUpdate" >nul 2>&1 && set "TASKOK=1"
+set "PLUGOK=0"
+if exist "%CommonProgramFiles%\VST3\Ambient Composer AI.vst3\Contents" set "PLUGOK=1"
+
 echo ============================================================
-echo    DONE!
+if "%PLUGOK%"=="1" if "%TASKOK%"=="1" (
+    echo    DONE - everything is set up!
+    echo.
+    echo    * The plugin is installed.
+    echo    * It will keep itself up to date automatically - you
+    echo      never need to run this again.
+    echo.
+    echo    Next: open FL Studio, then
+    echo      Options -^> Manage plugins -^> "Find installed plugins",
+    echo    and add "Ambient Composer AI" to a channel.
+    echo ============================================================
+    echo.
+    pause & endlocal & exit /b 0
+)
+
+REM --- something didn't fully complete: say so clearly ---
+echo    NOT FULLY FINISHED - here's what happened:
 echo.
-echo    The plugin is installed and will keep itself up to date
-echo    automatically in the background - you never run this again.
+if "%PLUGOK%"=="1" ( echo    * Plugin installed: YES ) else ( echo    * Plugin installed: NO )
+if "%TASKOK%"=="1" ( echo    * Automatic updates: ON  ) else ( echo    * Automatic updates: NOT set up )
 echo.
-echo    Next: open FL Studio, then
-echo      Options -^> Manage plugins -^> "Find installed plugins",
-echo    and add "Ambient Composer AI" to a channel.
+echo    Please make sure you are connected to the internet and simply
+echo    run this file again - running it more than once is completely safe.
+echo    If it keeps failing, send back a photo of this window.
 echo ============================================================
 echo.
 pause

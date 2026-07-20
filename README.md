@@ -67,11 +67,13 @@ green, the `windows-latest` release exists and your friend can run the setup fil
 Every later `git push` refreshes that release automatically.
 
 **How it's wired:** `.github/workflows/build.yml` compiles on `windows-latest`
-(MSVC, static runtime — no VC++ redistributable needed) and publishes
-`AmbientComposerAI-VST3.zip` + `version.txt`. On the laptop,
-`windows-autoupdate/Update-AmbientComposerAI.ps1` compares `version.txt` to what's
-installed and swaps in the new `.vst3`; `Register-AutoUpdate.ps1` (run once by the
-setup `.bat`) schedules it. All downloads use the public release URL — no tokens.
+(MSVC + Ninja, static runtime — no VC++ redistributable needed) and publishes the
+release assets `AmbientComposerAI-VST3.zip`, `version.txt`, the setup `.bat`, and
+`AmbientComposerAI-AutoUpdate.ps1`. On the laptop, `Setup-AmbientComposerAI.bat`
+downloads that single self-contained script and runs it with `-Setup` (first
+install + registers a scheduled task); thereafter the task runs the same script,
+which compares `version.txt` to what's installed and swaps in the new `.vst3`. All
+downloads use the public release URL — no tokens.
 
 ---
 
