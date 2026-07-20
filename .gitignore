@@ -1,0 +1,20 @@
+# Build output (JUCE is fetched here too — never commit it)
+/build/
+build*/
+cmake-build-*/
+
+# Installer output
+installer/Output/
+*.exe
+*.zip
+
+# IDE / OS cruft
+.DS_Store
+.vs/
+.idea/
+*.user
+*.suo
+CMakeSettings.json
+
+# Local scratch
+*.mid
