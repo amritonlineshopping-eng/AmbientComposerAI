@@ -10,6 +10,10 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:      # lets you run it manually from the Actions tab
 
+# The release step needs write access to publish the installer on tags.
+permissions:
+  contents: write
+
 jobs:
   windows:
     name: Windows (VST3 + Standalone + Installer)
